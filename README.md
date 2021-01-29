@@ -5,7 +5,8 @@
 ### How to use:
 
 * Import the code: import louvainEfficient
-* Call the main method: louvainEfficient.louvain(graphAdjMatrix)
+* Create the instance: louvainEfficientInstance = louvainEfficient.LouvainEfficient()
+* Call the main method: louvainEfficientInstance.louvain(graphAdjMatrix)
 * The only param you have to provide is the graph adjancey matrix as a numpy 2-d array i.e. shape: (20, 20)
 * The method returns a node2community mapping (nodeId - communityId)
 
