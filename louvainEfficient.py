@@ -34,6 +34,9 @@ class LouvainEfficient():
     def computeModularityGain(self, node, communityId, graphAdjMatrix, community2nodes):
         m = self.computeM(graphAdjMatrix)
 
+        if (m == 0):
+            return 0
+
         k_n_neighCommunity = self.getNode2CommunitySum(node, communityId, graphAdjMatrix, community2nodes)
         sum_neighCommunity = self.getCommunityAllNodesSum(communityId, graphAdjMatrix, community2nodes)
         k_n = self.getNodeSum(node, graphAdjMatrix)
@@ -61,6 +64,9 @@ class LouvainEfficient():
     def computeModularity(self, graphAdjMatrix, community2nodes):
 
         m = self.computeM(graphAdjMatrix)
+
+        if (m == 0):
+            return 0
 
         partialSums = []
 
@@ -233,8 +239,12 @@ class LouvainEfficient():
             if isFirstPass:
                 community2nodesFull = community2nodes
                 node2communityFull = node2community
+                # cache previous step configuration in case modularity decreases instead of increasing
+                prevNode2communityFull = node2community
                 new2oldCommunities = dict(zip(community2nodes.keys(), community2nodes.keys()))
             else:
+                # cache previous step configuration in case modularity decreases instead of increasing
+                prevNode2communityFull = node2communityFull
                 (node2communityFull, community2nodesFull) = self.decompressSupergraph(community2nodes, community2nodesFull, new2oldCommunities)               
             
             newModularityFull = self.computeModularity(graphAdjMatrixFull, community2nodesFull)
@@ -242,6 +252,8 @@ class LouvainEfficient():
             print('Second phase modularity', newModularityFull)
 
             if (newModularityFull - initialModularityFull <= theta):
+                # restore previous step configuration
+                node2communityFull = prevNode2communityFull
                 break
             
             initialModularityFull = newModularityFull
