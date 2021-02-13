@@ -2,6 +2,7 @@ import numpy as np
 import time
 from random import shuffle
 import collections
+import math
 
 class LouvainEfficient():
 
@@ -43,12 +44,20 @@ class LouvainEfficient():
 
         return (1/m) * ( (k_n_neighCommunity) - (sum_neighCommunity * k_n)/(2*m) )
 
-
     def moveNodeToCommunity(self, node, oldCommunity, newCommunity, community2nodes, node2community):
         node2community[node] = newCommunity
         community2nodes[oldCommunity].remove(node)
         community2nodes[newCommunity].append(node)
         return (node2community, community2nodes)
+
+    def getCentroid(self, vectors):
+
+        vectors = np.array(vectors)
+
+        if (len(vectors) == 0):
+            return np.array([])
+
+        return np.mean(vectors, axis = 0)                    
 
     '''
     Graph is undirected, get only upper/lower side
@@ -167,13 +176,14 @@ class LouvainEfficient():
             if isFirstPass:
                 (node2community, community2nodes) = self.initialize(graphAdjMatrix)
                 graphAdjMatrixFull = graphAdjMatrix
-                initialModularityFull = self.computeModularity(graphAdjMatrix, community2nodes)
-                
+
+                initialModularityFull = self.computeModularity(graphAdjMatrix, community2nodes)                    
+
             print('Started Louvain first phase')
 
-            while True:
+            initialModularity = initialModularityFull
 
-                initialModularity = self.computeModularity(graphAdjMatrix, community2nodes)
+            while True:
 
                 noNodes = np.shape(graphAdjMatrix)[0]
                 nodes = list(range(noNodes))
@@ -202,11 +212,11 @@ class LouvainEfficient():
                     if (len(modularityGains) > 0):
                         
                         # get max modularity community
-                        modularityGains = np.array(modularityGains, dtype = int)
+                        modularityGains = np.array(modularityGains, dtype = float)
                         maxModularityGainIndex = np.argmax(modularityGains[:, 1])
-                        maxModularityGainIndices = np.where(modularityGains[:,1]==modularityGains[maxModularityGainIndex][1])
+                        maxModularityGainIndices = np.where(modularityGains[:, 1]==modularityGains[maxModularityGainIndex][1])
 
-                        maxModularityNeighs = [modularityGains[mIndex[0]][0] for mIndex in maxModularityGainIndices]
+                        maxModularityNeighs = [int(modularityGains[mIndex[0]][0]) for mIndex in maxModularityGainIndices]
 
                         maxModularityNodeId = maxModularityNeighs[0]
 
@@ -266,5 +276,3 @@ class LouvainEfficient():
         print("--- %s execution time in seconds ---" % (time.time() - start_time))
 
         return node2communityFull
-
-                
